@@ -194,9 +194,9 @@ export default function Home() {
               <h4>Other Details:</h4>
               <ul>
                 {Object.keys(data?.data?.[0])?.map(
-                  (k) =>
+                  (k, i) =>
                     k !== "aqi" && (
-                      <li>
+                      <li key={i}>
                         {k?.split("_").join(" ")}: {data?.data?.[0]?.[k]}
                       </li>
                     )
