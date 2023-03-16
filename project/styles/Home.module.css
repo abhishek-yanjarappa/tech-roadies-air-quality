@@ -8,6 +8,8 @@
     justify-content: center;
     align-items: center;
     background-image: url("/background.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
     transition: all;
     transition-delay: 100ms;
 }

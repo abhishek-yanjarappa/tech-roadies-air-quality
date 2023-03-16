@@ -11,7 +11,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  const lat = req.query?.["lat"] as string;
+  try {
+    const lat = req.query?.["lat"] as string;
   const lon = req?.query?.["lon"] as string;
   if (!isLatLonValid(lat, lon)) {
     return res.status(401).json({ message: "Invalid inputs" });
@@ -29,5 +30,8 @@ export default async function handler(
 
   const data = (await axios.request(options)).data;
 
-  res.status(200).json({ data });
+  return res.status(200).json({ data });
+  } catch (error:any) {
+  return res.status(500).json({ message:error?.["message"] || "Something went wrong" });
+  }
 }

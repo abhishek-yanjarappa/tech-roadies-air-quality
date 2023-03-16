@@ -1,7 +1,7 @@
 import Head from "next/head";
 import styles from "@roadies/styles/Home.module.css";
 import { useRouter } from "next/router";
-import { useReducer } from "react";
+import { useReducer, useState } from "react";
 import { useQuery } from "react-query";
 import axios, { AxiosError } from "axios";
 import { isLatLonValid } from "@roadies/utils/isStateValid";
@@ -23,6 +23,8 @@ export default function Home() {
         message:
           newState?.message == "gps"
             ? "Got from your location 👍"
+            : !!newState?.message?
+            "Got from City "+newState?.message+" 👍"
             : "Valid fr 💯",
         isValid: true,
       };
@@ -59,7 +61,7 @@ export default function Home() {
     message: "Enter the values",
     isValid: false,
   });
-
+  const [cityInput, setCityInput] = useState<string>("");
   const onSuccessfullLocation = (position: GeolocationPosition) => {
     setState({
       lat: position?.coords?.latitude?.toString(),
@@ -72,6 +74,13 @@ export default function Home() {
   const onLossLocation = (error: any) => {
     alert("Could'nt get you location.");
   };
+
+  const {data:cityList, isLoading:isListLoading} = useQuery([cityInput,"city-list"],
+  async() => (await axios.get(`https://nominatim.openstreetmap.org/search?city=${cityInput}&format=json`)).data,
+  {
+    enabled:!!cityInput
+  }
+  )
 
   const {
     data,
@@ -108,6 +117,7 @@ export default function Home() {
               style={{
                 margin: "0px",
                 color: state?.isValid ? "green" : "red",
+                maxWidth:"300px"
               }}
             >
               {state.message}
@@ -145,6 +155,12 @@ export default function Home() {
               placeholder="Enter Longitude"
             />
           </div>
+          <hr
+            style={{
+              border: "1px solid black",
+              width: "100%",
+            }}
+          />
           Or, You can give access to your location
           <button
             className={styles.button}
@@ -158,6 +174,29 @@ export default function Home() {
           >
             Give my location
           </button>
+          <hr
+            style={{
+              border: "1px solid black",
+              width: "100%",
+            }}
+          />
+          <div style={{display:"flex", flexDirection:"column", gap:"20px"}} >
+            Or, you can enter the city name.
+            <input className={styles.input} placeholder="Enter city name" value={cityInput} onChange={(e)=>setCityInput(e.target.value)} />
+            {isListLoading ? 
+            <p style={{width:"100%",display:"flex", justifyContent:"center"}} >Loading city list...</p>
+            :
+            <div style={{display:"flex",flexDirection:"column", gap:"5px"}} >
+            {cityList?.map((c:any, i:number)=>(
+              <button
+              onClick={()=>{setState({lat:c?.lat as string, lon:c?.lon as string, message:c?.display_name,isValid:true});setCityInput("")}} 
+               style={{maxWidth:"280px",textOverflow:"ellipsis", display:"flex"}}  
+               key={i} >{c?.display_name}</button>
+            ))}
+
+            </div>}
+          </div>
+
           <hr
             style={{
               border: "1px solid black",
